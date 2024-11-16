@@ -23,7 +23,7 @@ def login():
 def register():
     return render_template("register.html")
 
-@app.route("/onas", methods=['GET', 'POST'])
+@app.route("/onas")
 def onas():
     return render_template("onas.html")
 
