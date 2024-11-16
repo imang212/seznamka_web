@@ -1,0 +1,13 @@
+{% extends "template.html" %}
+{% block subtitle %}Přihlášení{% endblock %}
+{% block main %}
+<form action="form" method="post" id="loginForm">
+    <fieldset>
+        <div class="mb-3 mt-3"><label for="email" class="form-label">email:</label><input type="email" name="email" class="form-control" id="email" required></div>
+        <div class="mb-3 mt-3"></div><label for="password" class="form-label">password:</label><input type="password" name="password" class="form-control" id="password" required></div>
+    </fieldset>
+    <button type="submit" class="btn btn-primary" onclick="PostInformation()">Send</button>
+</form>
+<p class="alert alert-success mt-5" role="alert" id="success"></p>
+<p class="alert alert-success mt-5" role="alert" id="failed"></p>
+{% endblock %}
