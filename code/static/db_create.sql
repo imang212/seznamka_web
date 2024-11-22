@@ -3,19 +3,16 @@ CREATE TABLE IF NOT EXISTS public."Uzivatel"
     id_uziv integer NOT NULL,
     jmeno character varying(15) NOT NULL,
     prijmeni character varying(15) NOT NULL,
+    email character varying(100) NOT NULL,
+    telefon integer(10) NOT NULL,
     prezdivka character varying(15) NOT NULL,
     heslo character varying(2000) NOT NULL,
-    hledam character varying(15) NOT NULL,
-    konicky character varying(2000) NOT NULL,
-    orientace character varying(15) NOT NULL,
-    popis character varying(2000) NOT NULL,
-    fotka BLOB NOT NULL 
     CONSTRAINT "Uzivatel_pkey" PRIMARY KEY (id_uziv)
 );
 
-CREATE SEQUENCE vzdalenost_id_vzd_seq;
-ALTER TABLE "Vzdalenost"
-ALTER COLUMN id_uziv SET DEFAULT nextval('vzdalenost_id_vzd_seq');
+CREATE SEQUENCE cislo_uzivatele;
+ALTER TABLE "Uzivatel"
+ALTER COLUMN id_uziv SET DEFAULT nextval('cislo_uzivatele');
 
 CREATE TABLE IF NOT EXISTS public."Blok"
 (
