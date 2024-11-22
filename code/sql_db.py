@@ -1,6 +1,5 @@
 from sqlalchemy import create_engine,Table,MetaData,select,Column,Integer,String
 
-
 def Vrat_profil_z_db():
     db = create_engine('postgresql+psycopg2://dbuser:dbpwd@postgres:5432/postgres')
     metadata_obj=MetaData()
