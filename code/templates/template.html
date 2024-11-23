@@ -8,6 +8,21 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
+      #success{
+        display: none;
+      }
+      #failed{
+        display: none;
+      }
+      #regiterForm{
+        max-width: 800px;
+      }
+      #loginForm{
+        max-width: 800px;
+      }
+      #main_container{
+        min-height: 400px;
+      }
     </style>
 </head>
 <body>
@@ -27,7 +42,7 @@
             </ul>
           </div>
     </div></nav>
-    <div class="container text-center">
+    <div id="main_container" class="container text-center d-flex justify-content-center">
         {% block main %}{% endblock %}
     </div>
     <footer class="container-fluid text-center"><p>Seznamka 2024 Patrik Poklop s.r.o</p></footer>      

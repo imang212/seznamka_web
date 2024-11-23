@@ -2,16 +2,48 @@
 {% block subtitle %}Registrace{% endblock %}
 {% block main %}
 <form action="form" method="post" id="regiterForm">
-    <fieldset>
-        <div class="mb-3 mt-3"><label for="firstname" class="form-label">jméno:</label><input type="text" name="firstname" class="form-control" id="firstname" required></div>
-        <div class="mb-3 mt-3"><label for="lastname" class="form-label">prijmeni:</label><input type="text" name="lastname" class="form-control" id="lastname" required></div>
-        <div class="mb-3 mt-3"><label for="nickname" class="form-label">prezdivka:</label><input type="text" name="nickname" class="form-control" id="nickname" required></div> 
-        <div class="mb-3 mt-3"><label for="email" class="form-label">email:</label><input type="email" name="email" class="form-control" id="email" required></div>
-        <div class="mb-3 mt-3"></div><label for="password" class="form-label">password:</label><input type="password" name="password" class="form-control" id="password" required></div>
-        <div class="mb-3 mt-3"></div><label for="password" class="form-label">password again:</label><input type="password" name="password" class="form-control" id="password" required></div>
+    <fieldset class="container">
+        <div id="reg_div" class="mb-3 mt-3"><p class="text-center">Vytvoř si účet</p></div>
+        <div id="reg_div" class="row"><div class="col mb-3 mt-3"><label for="firstname" class="form-label">jméno:</label><input type="text" name="firstname" class="form-control" id="firstname" required></div>
+        <div id="reg_div" class="col mb-3 mt-3"><label for="lastname" class="form-label">prijmeni:</label><input type="text" name="lastname" class="form-control" id="lastname" required></div></div>
+        <div id="reg_div" class="mb-3 mt-3"><label for="nickname" class="form-label">prezdivka:</label><input type="text" name="nickname" class="form-control" id="nickname" required></div> 
+        <div id="reg_div" class="mb-3 mt-3"><label for="email" class="form-label">email:</label><input type="email" name="email" class="form-control" id="email" required></div>
+        <div id="reg_div" class="mb-3 mt-3"><label for="password" class="form-label">Heslo:</label><input type="password" name="password" class="form-control" id="password" required></div>
+        <div id="reg_div" class="mb-3 mt-3"><label for="password" class="form-label">password again:</label><input type="password" name="password" class="form-control" id="password" required></div>
+        <div id="reg_div" class="mb-3 mt-3"><label for="age" class="form-label">Věk:</label><input type="text" name="age" class="form-control" id="age" required></div> 
+        <div id="reg_div" class="form-floating mb-3 mt-3">
+            <select class="form-select" id="floatingSelect" aria-label="Floating label select example">
+              <option selected>Vyberte vaši orientaci</option>
+              <option value="1">Heterosexuální</option>
+              <option value="2">Bisexuální</option>
+              <option value="3">Homosexuální</option>
+              <option value="4">Lezbická</option>
+              <option value="5">Queer</option>
+              <option value="6">Pansexuální</option>
+            </select>
+            <label for="floatingSelect">Orientace</label>
+        </div>
+        <div id="reg_div" class="container text-center mb-3 mt-3 justify-content-center">
+            <p class="text-center">Zvol si koníčky</p>
+            <div class="row justify-content-center">
+                <div class="col-2 form-check"><label class="form-check-label" for="flexCheckIndeterminate"><input class="form-check-input" type="checkbox" value="" id="flexCheckIndeterminate">Sport</label></div>
+                <div class="col-2 form-check"><label class="form-check-label" for="flexCheckIndeterminate"><input class="form-check-input" type="checkbox" value="" id="flexCheckIndeterminate">Hraní her</label></div>
+                <div class="col-2 form-check"><label class="form-check-label" for="flexCheckIndeterminate"><input class="form-check-input" type="checkbox" value="" id="flexCheckIndeterminate">Hudba</label></div>
+                <div class="col-2 form-check"><label class="form-check-label" for="flexCheckIndeterminate"><input class="form-check-input" type="checkbox" value="" id="flexCheckIndeterminate">Cvičení</label></div>
+                <div class="col-2 form-check"><label class="form-check-label" for="flexCheckIndeterminate"><input class="form-check-input" type="checkbox" value="" id="flexCheckIndeterminate">Posilování</label></div>
+                <div class="col-2 form-check"><label class="form-check-label" for="flexCheckIndeterminate"><input class="form-check-input" type="checkbox" value="" id="flexCheckIndeterminate">Hudební nástroje</label></div>
+                <div class="col-2 form-check"><label class="form-check-label" for="flexCheckIndeterminate"><input class="form-check-input" type="checkbox" value="" id="flexCheckIndeterminate">Kytara</label></div>
+                <div class="col-2 form-check"><label class="form-check-label" for="flexCheckIndeterminate"><input class="form-check-input" type="checkbox" value="" id="flexCheckIndeterminate">Klavír</label></div>
+                <div class="col-2 form-check"><label class="form-check-label" for="flexCheckIndeterminate"><input class="form-check-input" type="checkbox" value="" id="flexCheckIndeterminate">Spaní</label></div>
+                <div class="col-2 form-check"><label class="form-check-label" for="flexCheckIndeterminate"><input class="form-check-input" type="checkbox" value="" id="flexCheckIndeterminate">Jídlo</label></div>
+                <div class="col-2 form-check"><label class="form-check-label" for="flexCheckIndeterminate"><input class="form-check-input" type="checkbox" value="" id="flexCheckIndeterminate">Meditace</label></div>
+                <div class="col-2 form-check"><label class="form-check-label" for="flexCheckIndeterminate"><input class="form-check-input" type="checkbox" value="" id="flexCheckIndeterminate">Běh</label></div>
+            </div>
+        </div>
+        <div id="reg_div" class="form-floating mb-3 mt-3"><textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea"></textarea> <label for="floatingTextarea">Napiš něco o sobě</label></div>
+        <div id="reg_div" class="d-flex justify-content-start checkbox mb-3 mt-3 row"><label class="text-start"><input type="checkbox"> Souhlasím s podmínkami</label></div>
     </fieldset>
-    <button type="submit" class="btn btn-primary" onclick="PostInformation()">Send</button>
+    <div class="d-grid gap-2 col-6 mx-auto"><button type="submit" class="btn btn-primary mb-5 mt-1" id="button" onclick="PostInformation()">Vytvoř profil</button></div>
 </form>
-<p class="alert alert-success mt-5" role="alert" id="success"></p>
-<p class="alert alert-success mt-5" role="alert" id="failed"></p>
+<p class="alert alert-success mt-5" role="alert" id="success"></p><p class="alert alert-danger mt-5" role="alert" id="failed"></p>
 {% endblock %}
