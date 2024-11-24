@@ -9,12 +9,13 @@ def Vrat_pocet_profilu():
 def Vytvor_profil_Node(node_id,jmeno,vek,orientace,konicky,popis):
     profil = Node("Osoba", node_id=node_id, name=jmeno, age=vek, orintace=orientace, hobbies=konicky, popis_profilu=popis)
     graph.create(profil)
-def Add_profile_neo(node_id,jmeno,prijmeni,prezdivka,telefon,email,heslo,vek,orientace,konicky,popis):
+def Add_profile_neo(node_id,jmeno,prijmeni,pohlavi,prezdivka,telefon,email,heslo,vek,orientace,konicky,popis):
     query = f"""
     MERGE (o:Osoba {{node_id: $node_id}}) 
     SET o.name = $name,
         o.surname = $surname,
         o.nickname = $nickname,
+        o.pohlavi = $pohlavi,
         o.email = $email,
         o.tel = $tel,
         o.heslo = $heslo,
@@ -24,7 +25,7 @@ def Add_profile_neo(node_id,jmeno,prijmeni,prezdivka,telefon,email,heslo,vek,ori
         o.popis_profilu = $popis_profilu
     RETURN o
     """    
-    result = graph.run(query, node_id=node_id, name=jmeno,surname=prijmeni,nickname=prezdivka,email=email,tel=telefon,heslo=heslo,age=vek,orientace=orientace,hobbies=konicky,popis_profilu=popis)
+    result = graph.run(query, node_id=node_id, name=jmeno,surname=prijmeni,pohlavi=pohlavi,nickname=prezdivka,email=email,tel=telefon,heslo=heslo,age=vek,orientace=orientace,hobbies=konicky,popis_profilu=popis)
     return result
 def Vymaz_vsechny_prfily():
     query = f"""
