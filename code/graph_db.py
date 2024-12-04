@@ -9,15 +9,13 @@ def Vrat_pocet_profilu():
 def Vytvor_profil_Node(node_id,jmeno,vek,orientace,konicky,popis):
     profil = Node("Osoba", node_id=node_id, name=jmeno, age=vek, orintace=orientace, hobbies=konicky, popis_profilu=popis)
     graph.create(profil)
-def Add_profile_neo(node_id,jmeno,prijmeni,pohlavi,prezdivka,telefon,email,heslo,vek,orientace,konicky,popis):
+def Add_profile_neo(node_id,jmeno,prijmeni,pohlavi,email,heslo,vek,orientace,konicky,popis):
     query = f"""
     MERGE (o:Osoba {{node_id: $node_id}}) 
     SET o.name = $name,
         o.surname = $surname,
-        o.nickname = $nickname,
         o.pohlavi = $pohlavi,
         o.email = $email,
-        o.tel = $tel,
         o.heslo = $heslo,
         o.age = $age,
         o.orientace = $orientace,
@@ -25,8 +23,33 @@ def Add_profile_neo(node_id,jmeno,prijmeni,pohlavi,prezdivka,telefon,email,heslo
         o.popis_profilu = $popis_profilu
     RETURN o
     """    
-    result = graph.run(query, node_id=node_id, name=jmeno,surname=prijmeni,pohlavi=pohlavi,nickname=prezdivka,email=email,tel=telefon,heslo=heslo,age=vek,orientace=orientace,hobbies=konicky,popis_profilu=popis)
+    result = graph.run(query, node_id=node_id, name=jmeno,surname=prijmeni,pohlavi=pohlavi,email=email,heslo=heslo,age=vek,orientace=orientace,hobbies=konicky,popis_profilu=popis)
     return result
+def Kontrola_existence_profilu(email):
+    query = f"""
+    MATCH (o:Osoba {{email: $email}})
+    RETURN COUNT(o) > 0 AS profileExists
+    """    
+    result = graph.run(query, email=email).evaluate()
+    return result
+def Vrat_uzivatele_podle_id(email):
+    query = f"""
+    MATCH (o:Osoba {{email: $email}})
+    RETURN o
+    """
+    result = graph.run(query, email=email).data()
+    if not result:
+        return None
+    if result: return result[0]['o'] 
+    return None
+def Vrat_prihlasovaci_udaje(email):
+    query = """
+    MATCH (o:Osoba {email: $email})
+    RETURN o
+    """
+    result = graph.run(query, email=email).data()
+    if result: return result[0]['o']
+    return None        
 def Vymaz_vsechny_prfily():
     query = f"""
     MATCH (n)
@@ -49,6 +72,14 @@ def Pridej_obrazek(node_id,image_path):
     RETURN n
     """
     result = graph.run(query, node_id=node_id, encoded_picture=image).data()
+    return result
+def Pridej_cislo(node_id,tel_cislo):
+    query = f"""
+    MATCH (n {{nodeid: $node_id}})
+    SET n.telefoni_cislo = $telefoni_cislo
+    RETURN n
+    """
+    result = graph.run(query, node_id=node_id, encoded_picture=tel_cislo).data()
     return result
 def Pridej_popis(node_id, popis):
     query = f"""

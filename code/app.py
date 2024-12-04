@@ -1,23 +1,35 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, make_response, jsonify
-from sql_db import Vloz_do_db, Vrat_data_z_db
-from graph_db import Add_profile_neo, Vrat_pocet_profilu, Vytvor_profil_Node, Pridej_obrazek
+from sql_db import Connect
+from graph_db import Add_profile_neo, Vrat_pocet_profilu, Vytvor_profil_Node, Pridej_obrazek, Kontrola_existence_profilu, Vrat_uzivatele_podle_id, Vrat_prihlasovaci_udaje
 from redis import Redis
 from bson import json_util
-import os, bcrypt, base64
+import os, bcrypt, datetime
+from flask_login import LoginManager, login_user, logout_user,current_user
+import user
 
 redis = Redis(host="redis", port=6379)
 app = Flask(__name__)
 app.secret_key = os.urandom(32)
 
+login_manager = LoginManager()
+login_manager.init_app(app)
 
-def Vytvor_profil(jmeno,prijmeni,pohlavi,prezdivka,email,telefon,heslo,vek,orientace,konicky,popis):
+def Vytvor_profil(jmeno,prijmeni,pohlavi,email,heslo,vek,orientace,konicky,popis):
     node_id = Vrat_pocet_profilu()
-    hash_pass = bcrypt.hashpw(heslo.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     #Vytvor_profil_db(node_id,jmeno,prijmeni,email,telefon,uzivatelske_jmeno,hash_pass) #pridam ucet do normalni db
-    Add_profile_neo(node_id,jmeno,prijmeni,pohlavi,prezdivka,telefon,email,hash_pass,vek,orientace,konicky,popis) #vytvorim profil v grafove databazi
+    Add_profile_neo(node_id,jmeno,prijmeni,pohlavi,email,bcrypt.hashpw(heslo.encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),vek,orientace,konicky,popis) #vytvorim profil v grafove databazi
+#Vytvor_profil("Patrik","Poklop","m","pokloppatrik@gmail.com","patrik123",23,"H",["sport","posilovani"],"Ahoj já jsem Patrik")
+#Vytvor_profil("Tomas","Omacka","ž","tomasek@gmail.com","tomas123",19,"H",["hrani","pc"],"Ahoj, já jsem tomas.")
 
-Vytvor_profil("Patrik","Poklop","m","imang21","pokloppatrik@gmail.com",702742701,"patrik123",23,"H",["sport","posilovani"],"Ahoj já jsem Patrik")
-Vytvor_profil("Tomas","Omacka","ž","tomasek123","tomasek@gmail.com",546895962,"tomas123",19,"H",["hrani","pc"],"Ahoj, já jsem tomas.")
+
+
+
+@login_manager.user_loader
+def loader_user(email):
+    if email is not None:
+        user_data = Vrat_uzivatele_podle_id(email) #komunikace s db
+        return user.User(email=user_data['email'],name=user_data['name']) #uložím do třídy
+    return None
 
 @app.route('/')
 @app.route('/main')
@@ -25,27 +37,48 @@ def main():
     return render_template("main.html")
 
 @app.route("/login",methods=['GET', 'POST'])
-def login():
-    return render_template("login.html")
-
-@app.route("/register", methods=['GET', 'POST'])
-def register():
+def login(): 
+    error = None
     if request.method == 'POST':
-        name = request.form['firstname']
-        lastname = request.form['lastname']
-        nickname = request.form['nickname']
-        email = request.form['email']
-        heslo = request.form['password']
-        heslo_znovu = request.form['password_again']
-        datum_narozeni = request.form['datum_narozeni']
-        pohlavi=request.form.get("typ_pohlavi")
-        orientace=request.form.get("orientace")
-        konicky=request.form.getlist("konicky")        
-        popis=request.form["popis"]       
-        if 'souhlas' in request.form: print("yes")
-        else: print("no")
+        email = request.form['email']; heslo = request.form['password']
+        user_data = Vrat_prihlasovaci_udaje(email)
+        if not user_data: error = "Zadaná emailová adresa neexistuje nebo není zaregistrovaná"
+        elif not bcrypt.checkpw(heslo.encode('utf-8'), user_data['heslo'].encode('utf-8')): error = "Vaše heslo je špatný."
+        else:
+            login_user(user.User(email=user_data['email'],name=user_data['name']))
+        return redirect(url_for("home"))
+    return render_template("login.html",error=error)
+@app.route("/logout")
+def logout():
+    logout_user()
+    return redirect(url_for("home"))
+@app.route('/debug')
+def debug():
+    return f"Authenticated: {current_user.is_authenticated}, User: {current_user.get_id()}"
+@app.route("/register", methods=['GET','POST'])
+def register():
+    error, success = None, None
+    if request.method == 'POST':        
+            name = request.form['firstname']; lastname = request.form['lastname']; email = request.form['email']
+            heslo = request.form['password']; heslo_znovu = request.form['password_again']
+            datum_narozeni = request.form['datum_narozeni']; year,month,day = map(int, datum_narozeni.split("-")); today = datetime.date.today(); age = today.year - year - ((today.month, today.day) < (month, day))
+            pohlavi=request.form.get("typ_pohlavi"); orientace=request.form.get("orientace")
+            konicky=request.form.getlist("konicky"); popis=request.form["popis"]
+            if Kontrola_existence_profilu(email): error = "Účet s tímto emailem již existuje."; return render_template("register.html",error=error)       
+            elif len(konicky)<3: error = "Musíte mít vybrené minimálně 3 koníčky."; return render_template("register.html",error=error)
+            elif age < 18: error = "Musíte být straší 18 let"; return render_template("register.html",error=error)
+            elif heslo != heslo_znovu: error = "Vaše hesla se neshodují"; return render_template("register.html",error=error)
+            elif 'souhlas' not in request.form: error = "Musíte souhlasit s podmínkami"; return render_template("register.html",error=error)
+            else: 
+                error,success = None, "Úspěšně jste se zaregistroval!"
+                Vytvor_profil(name,lastname,pohlavi,email,heslo,datum_narozeni,orientace,konicky,popis)
+                return render_template("register.html",success=success)
     return render_template("register.html")
-
+def success():
+    ...
+@app.route("/home")
+def home():
+    return render_template("home.html")
 @app.route("/browse",methods=['GET'])
 def browse():
     return render_template("browse.html")

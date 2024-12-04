@@ -1,12 +1,12 @@
 {% extends "template.html" %}
 {% block subtitle %}Přihlášení{% endblock %}
 {% block main %}
-<form action="form" method="post" id="loginForm">
+<div id="reg_div" class="h-25 p-3" style="min-height: 50px;">{% if error %}<p class="alert alert-danger" role="alert" id="failed">{{ error }}</p>{% endif %}</div>
+<form action="/login" method="POST" id="loginForm">
     <fieldset class="container justify-content-center">
         <div class="row mb-3 mt-3"><label for="email" class="form-label text-start">Zadej email</label><input type="email" name="email" class="form-control" id="email" placeholder="Email" required></div>
         <div class="row mb-3 mt-3"><label for="password" class="form-label text-start">Zadej heslo</label><input type="password" name="password" class="form-control" id="password" placeholder="Heslo" required></div>
     </fieldset>
     <div class="d-grid gap-2 col-6 mx-auto"><button type="submit" class="btn btn-primary mb-5 mt-1" onclick="PostInformation()">Přihlásit</button></div>
 </form>
-<p class="alert alert-success mt-5" role="alert" id="success"></p><p class="alert alert-success mt-5" role="alert" id="failed"></p>
 {% endblock %}
