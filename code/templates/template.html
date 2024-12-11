@@ -29,14 +29,24 @@
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span></button>
           <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            {% if current_user.is_authenticated %}
+            <ul class="navbar-nav justify-content-end">
+              <li class="nav-item"><a class="nav-link" href="home">Domov</a></li>
+              <li class="nav-item"><a class="nav-link" href="browse">Profily</a></li>
+              <li class="nav-item"><a class="nav-link" href="profil">Můj profil</a></li>
+              <li class="nav-item"><a class="nav-link" href="likes">Liky</a></li>
+              <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>       
+            </ul>       
+            {% else %}
             <ul class="navbar-nav">
-              <li class="nav-item"><a class="nav-link active" aria-current="page" href="main">Domů</a></li>
-              <li class="nav-item"><a class="nav-link" href="login">Přihlásit se</a></li>
-              <li class="nav-item"><a class="nav-link" href="onas">O nás</a></li>
-              <li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Další</a>
+                <li class="nav-item"><a class="nav-link active" aria-current="page" href="main">Domů</a></li>
+                <li class="nav-item"><a class="nav-link" href="login">Přihlásit se</a></li>
+                <li class="nav-item"><a class="nav-link" href="onas">O nás</a></li>
+                <li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Další</a>
                 <ul class="dropdown-menu"><li><a class="dropdown-item" href="register">Nemáte účet?</a></li></ul>
               </li>
             </ul>
+            {% endif %}
           </div>
     </div></nav>
     <div id="main_container" class="container text-center d-flex justify-content-center align-items-center flex-column">

@@ -1,0 +1,11 @@
+{% extends "template.html" %}
+{% block subtitle %}Profily{% endblock %}
+{% block main %}
+{% if current_user.is_authenticated %}
+    <div class="d-flex justify-content-start">  
+        {% for user in users %}
+            <div class="p-2">user</div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}

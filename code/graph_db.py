@@ -1,5 +1,5 @@
 from py2neo import Graph, Node, Relationship
-import base64
+from base64 import b64encode
 
 graph = Graph("neo4j://neo4j2:7687", auth=("neo4j", "adminpass"))
 def Vrat_pocet_profilu():
@@ -64,22 +64,40 @@ def Vymaz_profil(id_uziv):
     """    
     result = graph.run(query)
     return result
-def Pridej_obrazek(node_id,image_path):
-    with open(image_path, "rb") as image_file: image = base64.b64encode(image_file.read()).decode('utf-8')
+##jednotliva pridavani
+#fotky
+def Pridej_fotku(node_id,image_path): #pridam fotku a zasifruji primo ze systemu, pokud mám adresar
+    with open(image_path, "rb") as image_file: image = b64encode(image_file.read()).decode('utf-8')
     query = f"""
-    MATCH (n {{nodeid: $node_id}})
-    SET n.picture = $encoded_picture
-    RETURN n
+    MATCH (o:Osoba {{node_id: $node_id}})
+    SET o.picture = $encoded_picture
+    RETURN o
     """
     result = graph.run(query, node_id=node_id, encoded_picture=image).data()
     return result
+def Pridej_fotku_data(node_id,image_file): #zde predavam přímo data nahrané fotky, která potom zakoduji a ulozim do db
+    image_file = b64encode(image_file)
+    query = f"""
+    MATCH (n {{node_id: $node_id}})
+    SET n.picture = $encoded_picture
+    RETURN n
+    """
+    result = graph.run(query, node_id=node_id, encoded_picture=image_file).data()
+    return result
+def Vrat_fotku(node_id):
+    query = f"""
+    MATCH (o:Osoba {{node_id: $node_id}})
+    RETURN o.picture as fotka
+    """
+    result = graph.run(query, node_id=node_id).data()
+    return result[0]['fotka'] # vrátím fotku
 def Pridej_cislo(node_id,tel_cislo):
     query = f"""
     MATCH (n {{nodeid: $node_id}})
     SET n.telefoni_cislo = $telefoni_cislo
     RETURN n
     """
-    result = graph.run(query, node_id=node_id, encoded_picture=tel_cislo).data()
+    result = graph.run(query, node_id=node_id, telefoni_cislo=tel_cislo).data()
     return result
 def Pridej_popis(node_id, popis):
     query = f"""
@@ -89,3 +107,19 @@ def Pridej_popis(node_id, popis):
     """
     result = graph.run(query, node_id=node_id, popis_=popis).data()
     return result
+def Vrat_konicky(node_id):
+    query = f"""
+    MATCH (o:Osoba {{node_id: $node_id}})
+    RETURN o.hobbies as hobbies
+    """
+    result = graph.run(query, node_id=node_id).data()
+    return result[0]['hobbies'] 
+
+def Vrat_popis(node_id):
+    query = f"""
+    MATCH (o:Osoba {{node_id: $node_id}})
+    RETURN o.popis_profilu as popis
+    """
+    result = graph.run(query, node_id=node_id).data()
+    return result[0]['popis'] # vrátím fotku
+

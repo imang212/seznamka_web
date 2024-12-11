@@ -3,7 +3,6 @@
 {% block main %}
 {% if current_user.is_authenticated %}
     <h1>Jste přihlášený {{current_user.name}}</h1>
-    <a href="/logout">Logout</a>
     {% else %}
     <h1>Odhlásil jste se.</h1>
     {% endif %}

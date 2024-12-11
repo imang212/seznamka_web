@@ -1,0 +1,37 @@
+{% extends "template.html" %}
+{% block subtitle %}Můj profil{% endblock %}
+{% block main %}
+    {% if current_user.is_authenticated %}
+        <!--<script src="{{url_for('static',filename='main.js')}}" type="text/javascript"></script>-->
+        <div class="d-flex flex-column align-items-start w-100 mt-4 mb-4">  
+            <p>Jméno: {{ current_user.get_name() }}</p>
+            <p>Prijmeni: {{ current_user.get_surname() }}</p>
+            <p>Pohlavi: {{ current_user.get_pohlavi() }}</p>
+            <p>Věk: {{ current_user.get_vek() }}</p>
+            <p>Orientace: {{ current_user.get_orientace() }}</p>
+            <p>Konicky: {{ current_user.get_konicky() }}</p>
+            <p>Popis profilu: {{ current_user.get_popis() }}</p>
+            <div class="d-flex align-items-self-start mb-3">    
+                <div class="text_image_row"><p>Fotka:</p></div>
+                <div class="image_row ms-3 me-3">
+                    {% if current_user.get_fotka() %}
+                        <img src="data:{{ current_user.get_fotka().image_format }};base64,{{ current_user.get_fotka().image_data }}" style="width: 200px; height:auto;">
+                    {% else %}
+                        <p>Nemáte narhranou žádnou fotku.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <form action="/update_image" method="POST" enctype="multipart/form-data">
+                <label for="photo">Upload Photo: </label>
+                <input type="file" id="photo" name="photo" accept=".png, .jpg, .jpeg" required>
+                <button type="submit" id="update_button" class="btn btn-outline-secondary mt-3 mb-3">Nahrát fotku</button>
+            </form>
+            <div id="photo_div" class="h-25 p-3" style="min-height: 50px;">{% if photo_error %}<p class="alert alert-danger" role="alert" id="failed">{{ photo_error }}</p>{% endif %}
+            {% if photo_success %}<p class="alert alert-success" role="alert" id="success">{{ photo_success }}</p>{% endif %}</div>
+        </div>
+    {% else %}
+        <h1>Nejste přihlášený.</h1>
+    {% endif %}
+
+{% endblock %}

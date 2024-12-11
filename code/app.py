@@ -1,11 +1,12 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, make_response, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, make_response, jsonify, session
 from sql_db import Connect
-from graph_db import Add_profile_neo, Vrat_pocet_profilu, Vytvor_profil_Node, Pridej_obrazek, Kontrola_existence_profilu, Vrat_uzivatele_podle_id, Vrat_prihlasovaci_udaje
+from graph_db import Add_profile_neo, Vrat_pocet_profilu, Vytvor_profil_Node, Kontrola_existence_profilu, Vrat_uzivatele_podle_id, Vrat_prihlasovaci_udaje, Pridej_fotku_data, Pridej_fotku
 from redis import Redis
 from bson import json_util
 import os, bcrypt, datetime
 from flask_login import LoginManager, login_user, logout_user,current_user
-import user
+import user_model
+from werkzeug.utils import secure_filename
 
 redis = Redis(host="redis", port=6379)
 app = Flask(__name__)
@@ -22,13 +23,11 @@ def Vytvor_profil(jmeno,prijmeni,pohlavi,email,heslo,vek,orientace,konicky,popis
 #Vytvor_profil("Tomas","Omacka","ž","tomasek@gmail.com","tomas123",19,"H",["hrani","pc"],"Ahoj, já jsem tomas.")
 
 
-
-
 @login_manager.user_loader
 def loader_user(email):
     if email is not None:
         user_data = Vrat_uzivatele_podle_id(email) #komunikace s db
-        return user.User(email=user_data['email'],name=user_data['name']) #uložím do třídy
+        return user_model.User(email=user_data['email'],node_id=user_data['node_id'],name=user_data['name'],surname=user_data['surname'],pohlavi=user_data['pohlavi'],vek=user_data['age'],orientace=user_data['orientace']) #uložím do třídy
     return None
 
 @app.route('/')
@@ -45,8 +44,9 @@ def login():
         if not user_data: error = "Zadaná emailová adresa neexistuje nebo není zaregistrovaná"
         elif not bcrypt.checkpw(heslo.encode('utf-8'), user_data['heslo'].encode('utf-8')): error = "Vaše heslo je špatný."
         else:
-            login_user(user.User(email=user_data['email'],name=user_data['name']))
-        return redirect(url_for("home"))
+            session['user_id'] = user_data['node_id'] #vytvořím session
+            login_user(user_model.User(email=user_data['email'],node_id=user_data['node_id'],name=user_data['name'],surname=user_data['surname'],pohlavi=user_data['pohlavi'],vek=user_data['age'],orientace=user_data['orientace']))
+            return redirect(url_for("home"))
     return render_template("login.html",error=error)
 @app.route("/logout")
 def logout():
@@ -82,6 +82,34 @@ def home():
 @app.route("/browse",methods=['GET'])
 def browse():
     return render_template("browse.html")
+@app.route("/profil",methods=['GET'])
+def profil():
+    #photos = []
+    #for file in user.files:
+    #    base64_photo = base64.b64encode(file.file_data).decode('utf-8')
+    #    mimetype = "jpeg" if file.file_name.lower().endswith('.jpg') else "png"
+    #    photos.append({'base64_photo': base64_photo, 'mimetype': mimetype})
+    return render_template("profil.html")
+# setter který patří k stránce profil
+@app.route('/update_image', methods=['POST'])
+def update_image(): #načte data z jsonu
+    photo_error,photo_success = None,None
+    if 'photo' not in request.files: photo_error="No file uploaded" 
+    photo = request.files['photo']; datafile = photo.read() #fotku si uložím jenom do databáze
+    if photo.filename == '': photo_error="No selected file"
+    if photo.mimetype not in ['image/png', 'image/jpeg', 'image/jpg']: photo_error="Invalid file type"
+    result = Pridej_fotku_data(session['user_id'],image_file=datafile)
+    if result: photo_success="Fotka byla úspěšně nahraná."
+    else: photo_error="Chyba při nahrání fotky"
+    return render_template("profil.html",photo_error=photo_error,photo_success=photo_success)
+
+@app.route("/profiles",methods=['GET'])
+def profiles():
+    return render_template("profiles.html")
+@app.route("/likes",methods=['GET'])
+def likes():
+    return render_template("likes.html")
+
 
 @app.route("/onas")
 def onas():
