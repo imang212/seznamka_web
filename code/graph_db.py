@@ -64,6 +64,42 @@ def Vymaz_profil(id_uziv):
     """    
     result = graph.run(query)
     return result
+def Vrat_vsechny_profily(pohlavi=None):
+    query = f"""MATCH (n) RETURN n"""    
+    result = graph.run(query)
+    return [record['n'] for record in result]
+
+def Like_profile(node_id_1,node_id_2):
+    node1 = graph.evaluate("MATCH (o:Osoba) WHERE o.node_id = $node_id RETURN o", node_id=node_id_1)
+    node2 = graph.evaluate("MATCH (o:Osoba) WHERE o.node_id = $node_id RETURN o", node_id=node_id_2)
+    print(node1,node2)
+    if node1 and node2: 
+        result = graph.evaluate("MATCH (a)-[r:LIKES]->(b) WHERE a.node_id = $id1 AND b.node_id = $id2 RETURN r",id1=node_id_1, id2=node_id_2)
+        if result: return "Like"
+        else:
+            relationship = Relationship(node1, "LIKES", node2); graph.create(relationship); return "Relation"
+    else:
+        return None
+def delete_like(node_id_1,node_id_2):
+    query = """
+    MATCH (a)-[r:LIKES]->(b)
+    WHERE a.node_id = $node_id_1 AND b.node_id = $node_id_2
+    DELETE r
+    """
+    result = graph.run(query, node_id_1=node_id_1, node_id_2=node_id_2)
+    if result: return True
+    return None
+
+def get_user_likes(node_id): #zjistím komu uživatel s daným id již dal like
+    query = f"""
+        MATCH (n)-[:LIKES]->(liker)
+        WHERE n.node_id = $node_id
+        RETURN liker.node_id AS liker_id
+        """
+    results = graph.run(query, node_id=node_id).data()
+    return [int(record['liker_id']) for record in results]
+    
+
 ##jednotliva pridavani
 #fotky
 def Pridej_fotku(node_id,image_path): #pridam fotku a zasifruji primo ze systemu, pokud mám adresar
@@ -93,17 +129,26 @@ def Vrat_fotku(node_id):
     return result[0]['fotka'] # vrátím fotku
 def Pridej_cislo(node_id,tel_cislo):
     query = f"""
-    MATCH (n {{nodeid: $node_id}})
-    SET n.telefoni_cislo = $telefoni_cislo
-    RETURN n
+    MATCH (o:Osoba {{node_id: $node_id}})
+    SET o.telefoni_cislo = $telefoni_cislo
+    RETURN o
     """
     result = graph.run(query, node_id=node_id, telefoni_cislo=tel_cislo).data()
     return result
+def Zmen_konicky(node_id, konicky):
+    query = f"""
+    MATCH (o:Osoba {{node_id: $node_id}})
+    SET o.hobbies = $hobbies
+    RETURN o
+    """
+    result = graph.run(query, node_id=node_id, hobbies=konicky).data()
+    return result
+
 def Pridej_popis(node_id, popis):
     query = f"""
-    MATCH (n {{nodeid: $node_id}})
-    SET n.popis_profilu = $popis_
-    RETURN n
+    MATCH (o:Osoba {{node_id: $node_id}})
+    SET o.popis_profilu = $popis_
+    RETURN o
     """
     result = graph.run(query, node_id=node_id, popis_=popis).data()
     return result
@@ -122,4 +167,3 @@ def Vrat_popis(node_id):
     """
     result = graph.run(query, node_id=node_id).data()
     return result[0]['popis'] # vrátím fotku
-

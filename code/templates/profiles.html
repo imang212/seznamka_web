@@ -2,10 +2,42 @@
 {% block subtitle %}Profily{% endblock %}
 {% block main %}
 {% if current_user.is_authenticated %}
-    <div class="d-flex justify-content-start">  
+    <style></style>
+    <div class="h-25 p-3" style="min-height: 65px; margin-bottom: -20px; margin-top: -10px;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <p id="flash_messages" class="alert alert-{{ category }}" role="alert" id="success">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+    <h1 class="fs-3 mt-0">Hledej mezi profily</h1>
+    <div class="d-flex justify-content-start align-items-start w-100 flex-row" style="min-height: 400px;">  
         {% for user in users %}
-            <div class="p-2">user</div>
+            {% if user['node_id'] != current_user.get_node_id() and user['node_id'] not in get_user_likes(current_user.get_node_id())%}
+                {% if user['picture'] %}
+                    <div id="box" class="p-0 border border-dark border-3 rounded-3 m-2 position-relative border-opacity-75" style="min-width: 200px;">
+                        <p class="position-absolute fw-bold ms-2 mt-2 fs-5">{{user['name']}}</p>
+                        <p class="position-absolute bottom-0 end-0 fw-bold mb-2 me-2 fs-5">{{age_formater(user['age'])}} let</p>
+                        <img class="align-self-start" src="data:{{ image_format(user['picture']) }};base64,{{ user['picture'] }}" style="width: 200px; height:auto;">
+                        <a href="{{ url_for('like_profile',user_node_id=current_user.get_node_id(), node_id=user['node_id'], name=user['name']) }}" class="position-absolute bottom-0 start-50 f-2 translate-middle-x" style="padding-bottom: 10px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-heart-fill icon-large" viewBox="0 0 16 16" style="width: 28px; height: 28px"><path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/></svg>
+                        </a>
+                    </div>
+                {% endif %}
+            {% endif %}
         {% endfor %}
     </div>
+    <script>
+        setTimeout(function() {
+            const flashMessages = document.getElementById('flash_messages');
+            if (flashMessages) {
+                flashMessages.style.display = 'none';
+            }
+        }, 3000);
+    </script>
+{% else %}
+    <h1>Nejste přihlášený.</h1>
 {% endif %}
 {% endblock %}
