@@ -72,14 +72,9 @@ def Vrat_vsechny_profily(pohlavi=None):
 def Like_profile(node_id_1,node_id_2):
     node1 = graph.evaluate("MATCH (o:Osoba) WHERE o.node_id = $node_id RETURN o", node_id=node_id_1)
     node2 = graph.evaluate("MATCH (o:Osoba) WHERE o.node_id = $node_id RETURN o", node_id=node_id_2)
-    print(node1,node2)
-    if node1 and node2: 
-        result = graph.evaluate("MATCH (a)-[r:LIKES]->(b) WHERE a.node_id = $id1 AND b.node_id = $id2 RETURN r",id1=node_id_1, id2=node_id_2)
-        if result: return "Like"
-        else:
-            relationship = Relationship(node1, "LIKES", node2); graph.create(relationship); return "Relation"
-    else:
-        return None
+    if node1 and node2: relationship = Relationship(node1, "LIKES", node2); graph.create(relationship); return True
+    else: return None
+
 def delete_like(node_id_1,node_id_2):
     query = """
     MATCH (a)-[r:LIKES]->(b)
@@ -90,7 +85,7 @@ def delete_like(node_id_1,node_id_2):
     if result: return True
     return None
 
-def get_user_likes(node_id): #zjistím komu uživatel s daným id již dal like
+def get_user_likes(node_id): #zjistím jakým profilům uživatel s daným id již dal like
     query = f"""
         MATCH (n)-[:LIKES]->(liker)
         WHERE n.node_id = $node_id
@@ -99,7 +94,6 @@ def get_user_likes(node_id): #zjistím komu uživatel s daným id již dal like
     results = graph.run(query, node_id=node_id).data()
     return [int(record['liker_id']) for record in results]
     
-
 ##jednotliva pridavani
 #fotky
 def Pridej_fotku(node_id,image_path): #pridam fotku a zasifruji primo ze systemu, pokud mám adresar

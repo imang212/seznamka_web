@@ -2,11 +2,12 @@
 {% block subtitle %}Liky{% endblock %}
 {% block main %}
 {% if current_user.is_authenticated %}
+    <style>svg:hover{fill:rgb(198, 1, 1);}</style>
     <div class="h-25 p-3" style="min-height: 65px; margin-bottom: -20px; margin-top: -10px;">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <p id="flash_messages" class="alert alert-{{ category }}" role="alert" id="success">{{ message }}</p>
+                    <p id="flash_message" class="alert alert-{{ category }}" role="alert" id="success">{{ message }}</p>
                 {% endfor %}
             {% endif %}
         {% endwith %}
@@ -16,7 +17,7 @@
         {% for user in users %}
             {% if user['node_id'] in get_user_likes(current_user.get_node_id()) %}
                 {% if user['picture'] %}
-                    <div id="box" class="p-0 border border-dark border-3 rounded-3 m-2 position-relative border-opacity-75" style="min-width: 200px;">
+                    <div id="box" class="p-0 border border-dark border-3 rounded-3 m-2 position-relative border-opacity-75" style="min-width: 200px;;max-height: 272px; overflow: hidden;">
                         <p class="position-absolute fw-bold ms-2 mt-2 fs-5">{{user['name']}}</p>
                         <p class="position-absolute bottom-0 end-0 fw-bold mb-2 me-2 fs-5">{{age_formater(user['age'])}} let</p>
                         <img class="align-self-start" src="data:{{ image_format(user['picture']) }};base64,{{ user['picture'] }}" style="width: 200px; height:auto;">
@@ -30,7 +31,7 @@
     </div>
     <script>
         setTimeout(function() {
-            const flashMessages = document.getElementById('flash_messages');
+            const flashMessages = document.getElementById('flash_message');
             if (flashMessages) {flashMessages.style.display = 'none';}
         }, 3000);
     </script>

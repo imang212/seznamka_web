@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, make_response, jsonify, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from sql_db import Connect
 from graph_db import Add_profile_neo, Vrat_pocet_profilu, Kontrola_existence_profilu, Vrat_uzivatele_podle_id, Vrat_prihlasovaci_udaje, Pridej_fotku_data, Pridej_popis, Zmen_konicky, Vrat_vsechny_profily, Like_profile, get_user_likes, delete_like
 from redis import Redis
@@ -7,7 +7,7 @@ import os, bcrypt, datetime
 from flask_login import LoginManager, login_user, logout_user,current_user
 import user_model
 from werkzeug.utils import secure_filename
-from base64 import b64decode
+from image_decoder import Image_decoder
 
 redis = Redis(host="redis", port=6379)
 app = Flask(__name__)
@@ -17,6 +17,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(hours=1)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
+login_manager.session_protection = "strong"
 
 def Vytvor_profil(jmeno,prijmeni,pohlavi,email,heslo,vek,orientace,konicky,popis):
     node_id = Vrat_pocet_profilu()
@@ -25,17 +26,6 @@ def Vytvor_profil(jmeno,prijmeni,pohlavi,email,heslo,vek,orientace,konicky,popis
 #Vytvor_profil("Patrik","Poklop","m","pokloppatrik@gmail.com","patrik123",23,"H",["sport","posilovani"],"Ahoj já jsem Patrik")
 #Vytvor_profil("Tomas","Omacka","ž","tomasek@gmail.com","tomas123",19,"H",["hrani","pc"],"Ahoj, já jsem tomas.")
 
-def age_formater(datum_narozeni):
-    year,month,day = map(int, datum_narozeni.split("-")); today = datetime.date.today(); age = today.year - year - ((today.month, today.day) < (month, day))
-    return age
-
-def image_format(fotka):
-    
-    fotka_bin_format = b64decode(str(fotka)) #dekoduji abych to mohl oznat
-    if fotka_bin_format.startswith(b'\xFF\xD8\xFF'): return 'image/jpeg'
-    elif fotka_bin_format.startswith(b'\x89PNG\r\n\x1A\n'): return 'image/png'
-    elif fotka_bin_format.startswith(b'GIF8'): return 'image/gif'
-    else: return 'None'
 
 @login_manager.user_loader
 def loader_user(email):
@@ -60,6 +50,7 @@ def login():
         else:
             session['user_id'] = user_data['node_id'] #vytvořím session
             login_user(user_model.User(email=user_data['email'],node_id=user_data['node_id'],name=user_data['name'],surname=user_data['surname'],pohlavi=user_data['pohlavi'],vek=user_data['age'],orientace=user_data['orientace']))
+            if 'remember' in request.form: app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=3) 
             return redirect(url_for("home"))
     return render_template("login.html",error=error)
 @app.route("/logout")
@@ -137,7 +128,7 @@ def update_image():
 @app.route("/profiles",methods=['GET'])
 def profiles():
     users = Vrat_vsechny_profily() 
-    if users: return render_template("profiles.html",users=users,image_format=image_format,age_formater=age_formater,get_user_likes=get_user_likes)
+    if users: return render_template("profiles.html",users=users,image_format=Image_decoder(None).commit_format,age_formater=user_model.Account_info_format.age_formater,get_user_likes=get_user_likes)
 
 @app.route('/like/<int:user_node_id>/<int:node_id>/<name>', methods=['GET'])
 def like_profile(user_node_id,node_id,name):
@@ -146,10 +137,7 @@ def like_profile(user_node_id,node_id,name):
     likers = get_user_likes(user_node_id)
     if node_id not in likers: 
         olajkuj = Like_profile(user_node_id,node_id)
-        print(olajkuj)
-        if not olajkuj:
-            flash(f"Profilu {name} jste již dal like","success")  
-        elif olajkuj == "Relation":
+        if olajkuj:
             flash(f"Dal jsi like profilu {name}","success")
         else: flash(f"Chyba při komunikaci se serverem","danger")
     else: flash("Profilu jste již dal like","danger")
@@ -159,7 +147,7 @@ def like_profile(user_node_id,node_id,name):
 @app.route("/likes",methods=['GET'])
 def likes():
     users = Vrat_vsechny_profily() 
-    if users: return render_template("likes.html",users=users,image_format=image_format,age_formater=age_formater,get_user_likes=get_user_likes)
+    if users: return render_template("likes.html",users=users,image_format=Image_decoder(None).commit_format,age_formater=user_model.Account_info_format.age_formater,get_user_likes=get_user_likes)
 
 @app.route('/remove_like/<int:user_node_id>/<int:node_id>/<name>', methods=['GET'])
 def remove_like(user_node_id,node_id,name):

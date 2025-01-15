@@ -1,8 +1,9 @@
 from flask_login import UserMixin
-from py2neo.ogm import GraphObject, Property, NodeMatch
+from py2neo.ogm import GraphObject, Property
 from graph_db import Vrat_fotku, Pridej_fotku_data, Vrat_konicky, Vrat_popis
-from base64 import b64decode
 import datetime
+from image_decoder import Image_decoder
+from base64 import b64decode
 
 class User(UserMixin,GraphObject):
     __primarylabel__ = "User"
@@ -26,7 +27,7 @@ class User(UserMixin,GraphObject):
         self.name = name
         self.surname = surname
         self.pohlavi = pohlavi
-        year,month,day = map(int, vek.split("-")); today = datetime.date.today(); age = today.year - year - ((today.month, today.day) < (month, day))
+        age = Account_info_format.age_formater(vek)
         self.vek = age
         self.orientace = orientace
     
@@ -56,7 +57,7 @@ class User(UserMixin,GraphObject):
     
     def get_konicky(self):
         konicky = Vrat_konicky(self.node_id)
-        if konicky: self.konicky = konicky; return ' '.join(self.konicky)
+        if konicky: self.konicky = konicky; Account_info_format.konicky_format(self.konicky)
         return None
     
     def get_popis(self): 
@@ -64,20 +65,14 @@ class User(UserMixin,GraphObject):
         if popis: self.popis = popis; return self.popis
         return None
         
-
     def get_fotka(self):  #!důležité! fotku si nechám dekodovovanou html img element si umí sám fotku dekodovat 
-        fotka = Vrat_fotku(self.node_id) #načte fotku z databáze
-        if not fotka: return None #když fotka v databázi není, tak ukončím funkci
-        # nejdžív musím rozpoznat formát fotky abych jí mohl otevřít
-        fotka_bin_format = b64decode(fotka) #dekoduji abych to mohl oznat
-        if fotka_bin_format.startswith(b'\xFF\xD8\xFF'): image_format = 'image/jpeg'
-        elif fotka_bin_format.startswith(b'\x89PNG\r\n\x1A\n'): image_format = 'image/png'
-        elif fotka_bin_format.startswith(b'GIF8'): image_format = 'image/gif'
-        else: return None
-        if fotka: return {"image_format": image_format,"image_data": fotka}#vrátím dekodovana data fotky podle zkratky a binárních dat, abych je poté mohl uložit do html image
-        
+        photo_info = Image_decoder(self.node_id).commit()
+        if photo_info: return photo_info #vrátím dekodovana data fotky podle zkratky a binárních dat, abych je poté mohl uložit do html image
+        return None
     
+class Account_info_format:
+    def age_formater(datum_narozeni):
+        year,month,day = map(int, datum_narozeni.split("-")); today = datetime.date.today(); age = today.year - year - ((today.month, today.day) < (month, day))
+        return age
     
-
-
-    
+    def konicky_format(konicky): return ', '.join(konicky)
