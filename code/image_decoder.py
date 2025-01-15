@@ -50,11 +50,13 @@ class Image_decoder():
         compressed_format = self.return_image_data.pack_img_html_data(image_type,encoded_data)
         return compressed_format
     
-    #operace vrací pouze typ fotky
+    #facade s operací, která vrací pouze typ fotky
     def commit_format(self,encoded_photo_data):
         decoded_data = self.decode_image.decode(encoded_photo_data)
         image_type =  self.get_image_format.return_image_format(decoded_data)
         return image_type
+    
+
         
 
 #testing

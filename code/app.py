@@ -1,12 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-from sql_db import Connect
 from graph_db import Add_profile_neo, Vrat_pocet_profilu, Kontrola_existence_profilu, Vrat_uzivatele_podle_id, Vrat_prihlasovaci_udaje, Pridej_fotku_data, Pridej_popis, Zmen_konicky, Vrat_vsechny_profily, Like_profile, get_user_likes, delete_like
 from redis import Redis
-from bson import json_util
 import os, bcrypt, datetime
 from flask_login import LoginManager, login_user, logout_user,current_user
 import user_model
-from werkzeug.utils import secure_filename
 from image_decoder import Image_decoder
 
 redis = Redis(host="redis", port=6379)
