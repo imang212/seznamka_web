@@ -21,7 +21,7 @@
                         <p class="position-absolute fw-bold ms-2 mt-2 fs-5">{{user['name']}}</p>
                         <p class="position-absolute bottom-0 end-0 fw-bold mb-2 me-2 fs-5">{{age_formater(user['age'])}} let</p>
                         <img class="align-self-center" src="data:{{ image_format(user['picture']) }};base64,{{ user['picture'] }}" style="width: 200px; height:auto;">
-                        <a id="heart" href="{{ url_for('like_profile',user_node_id=current_user.get_node_id(), node_id=user['node_id'], name=user['name']) }}" class="position-absolute bottom-0 start-50 f-2 translate-middle-x" style="padding-bottom: 10px;">
+                        <a id="heart" href="{{ url_for('like_profile',user_node_id=current_user.get_node_id(), node_id=user['node_id'], name=user['name'], liker_name=current_user.get_name()) }}" class="position-absolute bottom-0 start-50 f-2 translate-middle-x" style="padding-bottom: 10px;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-heart-fill icon-large" viewBox="0 0 16 16" style="width: 28px; height: 28px"><path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/></svg>
                         </a>
                     </div>

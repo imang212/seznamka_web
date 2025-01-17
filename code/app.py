@@ -5,6 +5,7 @@ import os, bcrypt, datetime
 from flask_login import LoginManager, login_user, logout_user,current_user
 import user_model
 from image_decoder import Image_decoder
+from like_notifier import Like_notifier, User_Notification
 
 redis = Redis(host="redis", port=6379)
 app = Flask(__name__)
@@ -127,14 +128,18 @@ def profiles():
     users = Vrat_vsechny_profily() 
     if users: return render_template("profiles.html",users=users,image_format=Image_decoder(None).commit_format,age_formater=user_model.Account_info_format.age_formater,get_user_likes=get_user_likes)
 
-@app.route('/like/<int:user_node_id>/<int:node_id>/<name>', methods=['GET'])
-def like_profile(user_node_id,node_id,name):
+@app.route('/like/<int:user_node_id>/<int:node_id>/<name>/<liker_name>', methods=['GET'])
+def like_profile(user_node_id,node_id,name,liker_name):
     session.pop('_flashes', None)
     if not user_node_id: render_template("profil.html")
     likers = get_user_likes(user_node_id)
     if node_id not in likers: 
         olajkuj = Like_profile(user_node_id,node_id)
         if olajkuj:
+            #informuji o tom uživatele pomocí Notifikace
+            like_notifier = Like_notifier()
+            like_notifier.like(User_Notification)
+            like_notifier.notify(user_node_id, node_id, f"{liker_name} liked your profile!")
             flash(f"Dal jsi like profilu {name}","success")
         else: flash(f"Chyba při komunikaci se serverem","danger")
     else: flash("Profilu jste již dal like","danger")
