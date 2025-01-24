@@ -6,6 +6,7 @@ from flask_login import LoginManager, login_user, logout_user,current_user
 import user_model
 from image_decoder import Image_decoder
 from like_notifier import Like_notifier, User_Notification
+from sql_db import Connect
 
 redis = Redis(host="redis", port=6379)
 app = Flask(__name__)
@@ -18,11 +19,11 @@ login_manager.init_app(app)
 login_manager.session_protection = "strong"
 
 def Vytvor_profil(jmeno,prijmeni,pohlavi,email,heslo,vek,orientace,konicky,popis):
-    node_id = Vrat_pocet_profilu()
+    node_id = Vrat_pocet_profilu()+1
     #Vytvor_profil_db(node_id,jmeno,prijmeni,email,telefon,uzivatelske_jmeno,hash_pass) #pridam ucet do normalni db
     Add_profile_neo(node_id,jmeno,prijmeni,pohlavi,email,bcrypt.hashpw(heslo.encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),vek,orientace,konicky,popis) #vytvorim profil v grafove databazi
 #Vytvor_profil("Patrik","Poklop","m","pokloppatrik@gmail.com","patrik123",23,"H",["sport","posilovani"],"Ahoj já jsem Patrik")
-#Vytvor_profil("Tomas","Omacka","ž","tomasek@gmail.com","tomas123",19,"H",["hrani","pc"],"Ahoj, já jsem tomas.")
+#Vytvor_profil("Tomas","Omacka","m","tomasek@gmail.com","tomas123",19,"H",["hrani","pc"],"Ahoj, já jsem tomas.")
 
 
 @login_manager.user_loader
@@ -96,7 +97,7 @@ def profil():
 def update_konicky(): 
     error,success = None,None
     konicky = request.form.getlist("konicky")
-    if len(konicky)<3 not in request.files: error="Musíte vybrat minimálně 3 koníčky" 
+    if len(konicky)<3 not in request.files: error="Musíte vybrat minimálně 3 koníčky"; return render_template("profil.html",error=error)
     result = Zmen_konicky(session['user_id'],konicky)
     if result: success="Vaše koníčky byli změněny."
     else: error="Chyba při změně koníčků"
@@ -139,6 +140,7 @@ def like_profile(user_node_id,node_id,name,liker_name):
             #informuji o tom uživatele pomocí Notifikace
             like_notifier = Like_notifier()
             like_notifier.like(User_Notification)
+            like_notifier.set_user_state(1)
             like_notifier.notify(user_node_id, node_id, f"{liker_name} liked your profile!")
             flash(f"Dal jsi like profilu {name}","success")
         else: flash(f"Chyba při komunikaci se serverem","danger")
@@ -161,6 +163,17 @@ def remove_like(user_node_id,node_id,name):
         return redirect(url_for('likes'))
     else: flash(f"Profil {name} jste nedal like","success")
     return redirect(url_for('likes')) 
+
+@app.route("/notifications",methods=['GET'])
+def notifications():
+    db = Connect("dbuser","dbpwd","postgres","postgres")
+    if session.get('user_id') is not None:
+        notifikace = db.Vrat_data_z_db_podle_id('Notification', session['user_id'])
+        print(notifikace)
+        if db: return render_template("notifications.html",notifications=notifikace)
+    else:
+        return render_template("notifications.html")
+
 
 @app.route("/onas")
 def onas():

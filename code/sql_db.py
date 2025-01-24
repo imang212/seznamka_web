@@ -9,12 +9,14 @@ class Connect:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, user: str, password: str, ):
+    def __init__(self, user: str, password: str, server_name: str, database_name: str):
         if not hasattr(self,"db"): #aby inisializace proběhla jednou
             self.user = user
             self.password = password
+            self.server_name = server_name
+            self.database_name = database_name
             try:
-                self.db = create_engine(f'postgresql+psycopg2://{user}:{password}@postgres:5432/postgres')
+                self.db = create_engine(f'postgresql+psycopg2://{user}:{password}@{server_name}:5432/{database_name}')
             except SQLAlchemyError as e:
                 raise ConnectionError(f"Připojení selhalo: {e}")
 
@@ -32,7 +34,15 @@ class Connect:
         with self.db.connect() as conn:
             conn.execute(table.insert(), [params])
             conn.commit()
-    
+
+    def Vrat_data_z_db_podle_id(self, table_name: str, to_user_id: int):
+        metadata_obj=MetaData()
+        table = Table(table_name, metadata_obj, autoload_with=self.db)
+        with self.db.connect() as conn:
+            result = conn.execute(table.select().where(table.c.user_id2 == to_user_id)).fetchall()
+        return result#[dict(row) for row in result]
+
+
     #Když budu chtím změnit instanci přihlášení
     @classmethod
     def reset_instance(cls, user, password):

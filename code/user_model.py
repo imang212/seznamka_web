@@ -57,7 +57,7 @@ class User(UserMixin,GraphObject):
     
     def get_konicky(self):
         konicky = Vrat_konicky(self.node_id)
-        if konicky: self.konicky = konicky; Account_info_format.konicky_format(self.konicky)
+        if konicky: self.konicky = konicky; return Account_info_format.konicky_format(self.konicky)
         return None
     
     def get_popis(self): 

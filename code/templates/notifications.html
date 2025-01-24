@@ -1,0 +1,21 @@
+{% extends "template.html" %}
+{% block subtitle %}Můj profil{% endblock %}
+{% block main %}
+    {% if current_user.is_authenticated %}
+    <h1 class="fs-3 mt-0">Tvoje notifikace</h1>
+    <div class="d-flex justify-content-start align-items-center w-100 flex-column" style="min-height: 400px;">
+        {% if notifications %}
+            {% for notification in notifications %}
+            <div class="notifikace p-2 border border-3 rounded-3 border-primary border-opacity-50 position-relative w-75">
+                <p class="position-absolute mt-0 fw-medium">{{ notification['date'].strftime("%d.%m.%Y, %H:%M:%S") }}</p>
+                <p class="mt-3 mb-3 fs-3 fw-normal">{{ notification['message'] }}</p>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>Nemáte žádné notifikace</p>
+        {% endif %}
+        </div>
+    {% else %}
+        <h1>Nejste přihlášený.</h1>
+    {% endif %}
+{% endblock %}
