@@ -1,11 +1,11 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-from graph_db import Add_profile_neo, Vrat_pocet_profilu, Kontrola_existence_profilu, Vrat_uzivatele_podle_id, Vrat_prihlasovaci_udaje, Pridej_fotku_data, Pridej_popis, Zmen_konicky, Vrat_vsechny_profily, Like_profile, get_user_likes, delete_like
+from graph_db import Add_profile_neo, Vrat_pocet_profilu, Kontrola_existence_profilu, Vrat_uzivatele_podle_id, Vrat_prihlasovaci_udaje, Pridej_fotku_data, Pridej_popis, Zmen_konicky, Vrat_vsechny_profily, Like_profile, get_user_likes, delete_like, Mutual_like
 from redis import Redis
 import os, bcrypt, datetime
 from flask_login import LoginManager, login_user, logout_user,current_user
 import user_model
 from image_decoder import Image_decoder
-from like_notifier import Like_notifier, User_Notification
+from like_notifier import Like_notifier, User_liker, User_liked
 from sql_db import Connect
 
 redis = Redis(host="redis", port=6379)
@@ -17,6 +17,8 @@ app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(hours=1)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.session_protection = "strong"
+
+like_notifier = Like_notifier()
 
 def Vytvor_profil(jmeno,prijmeni,pohlavi,email,heslo,vek,orientace,konicky,popis):
     node_id = Vrat_pocet_profilu()+1
@@ -138,13 +140,19 @@ def like_profile(user_node_id,node_id,name,liker_name):
         olajkuj = Like_profile(user_node_id,node_id)
         if olajkuj:
             #informuji o tom uživatele pomocí Notifikace
-            like_notifier = Like_notifier()
-            like_notifier.like(User_Notification)
+            like_notifier.append(User_liker)
             like_notifier.set_user_state(1)
             like_notifier.notify(user_node_id, node_id, f"{liker_name} liked your profile!")
             flash(f"Dal jsi like profilu {name}","success")
+            if Mutual_like(user_node_id, node_id): 
+                like_notifier.append(User_liked)
+                like_notifier.notify(user_node_id, node_id, f"You have a sympathy with {liker_name}!")
+                like_notifier.set_user_state(2)
+                like_notifier.notify(user_node_id, node_id, f"You have a sympathy with {name}!")
+                like_notifier.detach(User_liked)
         else: flash(f"Chyba při komunikaci se serverem","danger")
     else: flash("Profilu jste již dal like","danger")
+    like_notifier.detach(User_liker)
     return redirect(url_for('profiles')) 
      
 

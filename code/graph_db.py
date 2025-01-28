@@ -75,6 +75,16 @@ def Like_profile(node_id_1,node_id_2):
     if node1 and node2: relationship = Relationship(node1, "LIKES", node2); graph.create(relationship); return True
     else: return None
 
+def Mutual_like(node_id_1, node_id_2):
+    query = f"""
+    MATCH (a:Osoba)-[:LIKES]->(b:Osoba),
+          (b:Osoba)-[:LIKES]->(a:Osoba)
+    WHERE a.node_id = $node_id_1 AND b.node_id = $node_id_2
+    RETURN COUNT(*) AS mutual_likes
+    """
+    sympathy = graph.evaluate(query, node_id_1=node_id_1, node_id_2=node_id_2)
+    return sympathy > 0 #vrátí True pokud bude 1
+
 def delete_like(node_id_1,node_id_2):
     query = """
     MATCH (a)-[r:LIKES]->(b)
