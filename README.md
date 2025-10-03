@@ -5,5 +5,6 @@ Dating site using python flask.
 
 <img width="1903" height="701" alt="image" src="https://github.com/user-attachments/assets/08a52261-84a0-4c4e-a299-d9bed512ed82" />
 
+<img width="1895" height="787" alt="image" src="https://github.com/user-attachments/assets/06bf27ca-1cf1-4102-a6d8-5bc4b4ade2a9" />
 
 
