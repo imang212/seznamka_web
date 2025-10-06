@@ -20,9 +20,9 @@ Na seznamce si dá vytvořit profil a zaregistrovat.
 
 ### Profil
 <img width="1903" height="701" alt="image" src="https://github.com/user-attachments/assets/08a52261-84a0-4c4e-a299-d9bed512ed82" />
-Úprava svého profilu.
+Úprava svého profilu. Možnost změnit informace o svém profilu.
 
 ### Likování
 <img width="1895" height="787" alt="image" src="https://github.com/user-attachments/assets/06bf27ca-1cf1-4102-a6d8-5bc4b4ade2a9" />
-Likování profilů.
+Likování profilů. Možnost dát like profilu na seznamce pomocí srdíčka, pokud má nahranou profilovou fotku. Následně by se měla objevit notifikace danému uživateli v záložce notifications. Možnost je i zrušit like profilu v záložce likes. A pokud si oba profily navzájem dají like, tak se jim objeví v záložce relationships.
 
